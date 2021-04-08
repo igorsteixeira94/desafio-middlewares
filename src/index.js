@@ -10,19 +10,68 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+
+  const user = users.find(userItem => userItem.username === username);
+
+  if(user){
+    request.user = user;
+    return next();
+  }
+
+  return response.status(404).json({error:'Usuário não encontrado.'});
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const {user} = request;
+
+  if(user.pro === false && user.todos.length < 10){
+    return next();
+  }
+
+  if(user.pro){
+    return next();
+  }
+
+  return response.status(403).json({error:'Usuário atingiu o limite de dados.'});
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  const {id} = request.params;
+
+  const user = users.find(userItem => userItem.username === username);
+
+  if(user){
+
+    if(!validate(id)) return response.status(400).json({error:'Todo inválidos!'});
+
+    const todo = user.todos.find(todo => todo.id === id);
+
+    if(todo){
+      
+      request.user = user;
+      request.todo = todo;
+
+      return next();
+    }
+
+  }
+
+  return response.status(404).json({error:'Usuário e/ou Todo não encontrado!'});
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const {id} = request.params;
+
+  const user = users.find(userItem => userItem.id === id);
+
+  if(user){
+    request.user = user;
+    return next();
+  }
+
+  return response.status(404).json({error:'Usuário não encontrado.'});
 }
 
 app.post('/users', (request, response) => {
